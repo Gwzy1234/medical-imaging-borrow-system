@@ -1,0 +1,99 @@
+医学影像资料借阅管理系统 v0.9.1 部署说明
+========================================
+
+一、运行环境
+------------
+- Python 3.11 或更高版本（开发环境为 3.11.8）
+- 不需要安装 Node.js、npm，也不需要额外安装数据库服务
+- 数据库使用项目自带的 SQLite 文件 yy.db
+
+二、解压后安装依赖
+------------------
+1. 将压缩包解压到任意目录（建议路径中不要有空格或特殊符号）。
+2. 在解压后的项目根目录打开终端（PowerShell 或 cmd）。
+
+Windows PowerShell 示例：
+
+    py -3 -m venv .venv
+    .\.venv\Scripts\Activate.ps1
+    python -m pip install -r requirements.txt
+
+如果 PowerShell 禁止执行脚本，可改用 cmd：
+
+    py -3 -m venv .venv
+    .venv\Scripts\activate.bat
+    python -m pip install -r requirements.txt
+
+三、启动服务
+------------
+在项目根目录执行：
+
+    python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+看到 Uvicorn running on http://0.0.0.0:8000 后，浏览器打开：
+
+    http://127.0.0.1:8000/
+
+健康检查地址：
+
+    http://127.0.0.1:8000/health
+
+四、默认演示账号
+----------------
+    管理员：admin   / admin123
+    工作人员：staff / staff123
+    访客：viewer    / viewer123
+
+首次登录后建议在“用户管理”中确认账号状态。当前版本未提供改密接口；
+如需更换演示密码，请在 scripts/init_db.py 中调整后重置数据库。
+
+五、数据与备份
+--------------
+- yy.db 已包含演示资料、用户和操作日志，解压即可使用。
+- 管理员页面“系统管理 → 数据备份”可下载整库备份、上传恢复。
+- 恢复前会自动把当前数据库保存到 backups/pre_restore_*.db。
+- 操作日志可在“操作日志”页按操作人/动作/日期筛选、导出 CSV、归档旧日志；
+  归档文件保存在 backups/operation_logs_archive_*.csv。
+- 如需重置为初始演示数据（会删除现有数据，请先备份）：
+
+    python scripts/init_db.py --reset --seed
+
+六、常见问题
+------------
+1. 端口 8000 被占用：换一个端口，例如
+
+       python -m uvicorn app.main:app --host 0.0.0.0 --port 8001
+
+   然后访问 http://127.0.0.1:8001/
+
+2. 浏览器仍显示旧页面：前端资源带版本号，访问
+
+       http://127.0.0.1:8000/?v=0.9.1
+
+   或使用 Ctrl+F5 强制刷新。
+
+3. 依赖安装失败：确认 Python 版本 >= 3.11，并检查网络或 pip 镜像设置。
+
+4. 数据库文件损坏：停止服务，把 yy.db 备份后，执行
+
+       python scripts/init_db.py --reset --seed
+
+   重建演示数据库。
+
+七、目录说明
+------------
+    app/                  FastAPI 后端与业务逻辑
+    frontend/             原生 HTML/CSS/JS 前端
+    scripts/              数据库初始化、演示数据、启动脚本
+    tests/                自动化测试
+    docs/screenshots/     界面截图
+    schema.sql            数据库表结构
+    queries.sql           具名 SQL
+    yy.db                 SQLite 数据库（含演示数据）
+    requirements.txt      Python 依赖
+    README.md             完整项目说明
+
+八、版本
+--------
+    当前版本：0.9.1
+    启动后可在 /health 查看版本号
